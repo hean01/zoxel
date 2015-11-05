@@ -11,3 +11,4 @@ import plugins.tool_fill
 import plugins.tool_colourpick
 import plugins.io_obj
 import plugins.io_qubicle
+import plugins.io_magicavoxel
