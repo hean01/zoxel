@@ -364,19 +364,27 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.mouse_delta_absolute = (event.x() - self._mouse_absolute.x(), 
             event.y() - self._mouse_absolute.y())
 
+        # Check if we should propagate mouse event or just consume for
+        # internal actions; rotate, translate
+        consumeEvent = False
+        if event.buttons() & QtCore.Qt.MiddleButton or (event.buttons() & QtCore.Qt.RightButton and ctrl):
+            consumeEvent = True
+
         # Maybe we are dragging
         if time.time() - self._mousedown_time > 0.3 and not self._dragging:
             self._dragging = True
-            # Announce the start of a drag
-            x, y, z, face = self.window_to_voxel(event.x(), event.y())
-            self.send_drag(self.DRAG_START, x, y, z, event.x(), event.y(), face)
-            self.refresh()
+            if not consumeEvent:
+                # Announce the start of a drag
+                x, y, z, face = self.window_to_voxel(event.x(), event.y())
+                self.send_drag(self.DRAG_START, x, y, z, event.x(), event.y(), face)
+                self.refresh()
         elif time.time() - self._mousedown_time > 0.3 and self._dragging:
-            # Already dragging - send a drag event
-            x, y, z, face = self.window_to_voxel(event.x(), event.y())
-            self.send_drag(self.DRAG, x, y, z, event.x(), event.y(), face)
-            self.refresh()
-                        
+            if not consumeEvent:
+                # Already dragging - send a drag event
+                x, y, z, face = self.window_to_voxel(event.x(), event.y())
+                self.send_drag(self.DRAG, x, y, z, event.x(), event.y(), face)
+                self.refresh()
+
         # Right mouse button held down with CTRL key - rotate
         # Or middle mouse button held 
         if ((event.buttons() & QtCore.Qt.RightButton and ctrl)
